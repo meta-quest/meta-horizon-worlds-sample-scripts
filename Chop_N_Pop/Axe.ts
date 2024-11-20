@@ -6,8 +6,7 @@
 import { Behaviour } from 'Behaviour';
 import { Events } from 'Events';
 import { HapticFeedback, HapticHand, HapticType } from 'HapticFeedback';
-import { VFXParticleGizmo } from 'horizon/2p';
-import { AudioGizmo, AvatarGripPoseAnimationNames, CodeBlockEvents, Component, Entity, EventSubscription, Player, PlayerDeviceType, PropTypes, Vec3 } from 'horizon/core';
+import { AudioGizmo, AvatarGripPoseAnimationNames, CodeBlockEvents, Component, Entity, EventSubscription, ParticleGizmo, Player, PlayerDeviceType, PropTypes, Vec3 } from 'horizon/core';
 import { StageHand } from 'StageHand';
 import { Throttler } from 'Throttler';
 
@@ -65,7 +64,7 @@ class Axe extends Behaviour<typeof Axe> {
       Throttler.try("AxeHit", () => {
         this.props.hitSound?.as(AudioGizmo)?.play();
         this.props.hitVfx?.position.set(position);
-        this.props.hitVfx?.as(VFXParticleGizmo)?.play();
+        this.props.hitVfx?.as(ParticleGizmo)?.play();
         HapticFeedback.playPattern(this.entity.owner.get(), HapticType.hitPlayerBody, this.hand, this);
         this.sendNetworkEvent(itemHit, Events.axeHit, {hitPos : position, hitNormal : normal, fromPlayer : this.entity.owner.get()});
       }, this.props.swingCooldown)
