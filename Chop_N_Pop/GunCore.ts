@@ -22,7 +22,7 @@ type GunConfig = {
   fireRate: number,
   fireSpeed: number,
   maxAmmo: number,
-  shouldAutoFire: boolean,
+  burstCount: number,
   reloadTime: number,
   upwardsRecoilVel: number,
   upwardsRecoilAcc: number,
@@ -34,7 +34,7 @@ const pistolConfig = {
   fireRate: 100,
   fireSpeed: 500,
   maxAmmo: 10,
-  shouldAutoFire: false,
+  burstCount: 1,
   reloadTime: 200,
   upwardsRecoilVel: 30,
   upwardsRecoilAcc: 350,
@@ -42,9 +42,40 @@ const pistolConfig = {
   backwardsRecoilAcc: 7,
 };
 
+const burstPistolConfig = {
+  fireRate: 100,
+  fireSpeed: 500,
+  maxAmmo: 15,
+  burstCount: 3,
+  reloadTime: 200,
+  upwardsRecoilVel: 30,
+  upwardsRecoilAcc: 350,
+  backwardsRecoilVel: 0.5,
+  backwardsRecoilAcc: 7,
+};
+
+const machineGunConfig = {
+  fireRate: 100,
+  fireSpeed: 500,
+  maxAmmo: 30,
+  burstCount: 0,
+  reloadTime: 200,
+  upwardsRecoilVel: 30,
+  upwardsRecoilAcc: 350,
+  backwardsRecoilVel: 0.5,
+  backwardsRecoilAcc: 7,
+};
+
+const gunMode = {
+  semiAuto: 0,
+  burst: 1,
+  fullAuto: 2,
+};
+
 export class GunCore extends Behaviour<typeof GunCore> {
   static propsDefinition = {
     projectileLauncher: { type: PropTypes.Entity },
+    mode : { type: PropTypes.Number, default: 0 },
     slide: { type: PropTypes.Entity },
     slidePosition: { type: PropTypes.Vec3 },
     slideRotation: { type: PropTypes.Quaternion },
@@ -93,6 +124,8 @@ export class GunCore extends Behaviour<typeof GunCore> {
   triggerDownSubscription?: EventSubscription;
   triggerReleasedSubscription?: EventSubscription;
   reloadSubscription?: EventSubscription;
+
+  private currentBurstCount = 0;
 
   Awake(): void {
     super.Awake();
@@ -173,7 +206,17 @@ export class GunCore extends Behaviour<typeof GunCore> {
   }
 
   private initializeGunConfig(): void {
-    this.gunConfig = pistolConfig;
+    switch (this.props.mode) {
+      case gunMode.semiAuto:
+        this.gunConfig = pistolConfig;
+        break;
+      case gunMode.burst:
+        this.gunConfig = burstPistolConfig;
+        break;
+      case gunMode.fullAuto:
+        this.gunConfig = machineGunConfig;
+        break;
+    }
   }
 
   private fireWeapon() {
@@ -213,11 +256,16 @@ export class GunCore extends Behaviour<typeof GunCore> {
 
     HapticFeedback.playPattern(this.entity.owner.get()!, HapticType.gunShot, this.playerHand!, this);
 
-    if (this.gunConfig.shouldAutoFire && this.triggerHeld) {
-      this.fireQueue = true;
-    }
+    this.fireQueue = (this.shouldFireMore() && this.triggerHeld);
 
     this.async.setTimeout(() => this.endFireWait(), this.gunConfig.fireRate);
+  }
+
+  private shouldFireMore(){
+   if (this.gunConfig.burstCount > 0 && this.currentBurstCount >= this.gunConfig.burstCount) {
+      return false;
+    }
+    return true;
   }
 
   Update(deltaTime: number) {
@@ -262,7 +310,8 @@ export class GunCore extends Behaviour<typeof GunCore> {
       this.updateSlidePosition(this.currentAmmo > 0 ? AnimationState.closed : AnimationState.open);
     }, 50);
 
-    if (this.gunConfig.shouldAutoFire && this.fireQueue && this.triggerHeld) {
+    if (this.fireQueue && this.triggerHeld) {
+      this.currentBurstCount++;
       this.fireWeapon();
     }
   }
@@ -365,9 +414,9 @@ export class GunCore extends Behaviour<typeof GunCore> {
 
   private triggerDown(player: Player) {
     this.triggerHeld = true;
-    if (this.fireWait) {
-      this.fireQueue = true;
-    } else {
+    this.currentBurstCount = 0;
+    if (!this.fireWait) {
+      this.currentBurstCount++;
       this.fireWeapon();
     }
   }

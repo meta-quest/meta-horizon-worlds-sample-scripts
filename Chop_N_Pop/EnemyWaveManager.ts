@@ -26,7 +26,6 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
   };
 
   private currentWave: number = 0;
-  private currentDelay: number = 0;
   private waveSpawns: Array<Set<Entity>> = [];
   private updateInterval: number = 0;
 
@@ -60,8 +59,6 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
     if (this.props.activeFromStart) {
       this.activateWaveGroup({waveGroupName: this.name});
     }
-
-    this.updateInterval = this.async.setInterval(this.updateState.bind(this), 1000);
   }
 
   private findMonstersInRange(data : {entity : Entity, range : number}) {
@@ -125,20 +122,17 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
         this.waveCompleteNotified[i] = true;
         this.sendNetworkEvent(this.entity, WaveManagerNetworkEvents.WaveComplete, {waveGroupName: this.props.waveGroupName, waveNumber: this.currentWave});
 
-        // If it is a timed wave, starting the next one will be handled by the timer.
-        // Otherwise, start the next wave.
-        if (this.currentDelay == -1) {
-          if (this.currentWave < this.waveConfigs.length)
-          {
-            var nextWaveDelay = this.waveConfigs[this.currentWave].timeDelay * 1000; // Convert to milliseconds from seconds
-            this.async.setTimeout(() => this.nextWave(), nextWaveDelay > 0 ? nextWaveDelay : 1);
-          }
-          else
-          {
-            this.nextWave();
-          }
-          return;
+        // Start the next wave after a delay if there is one
+        if (this.currentWave < this.waveConfigs.length)
+        {
+          var nextWaveDelay = this.waveConfigs[this.currentWave-1].timeDelay * 1000; // Convert to milliseconds from seconds
+          this.async.setTimeout(() => this.nextWave(), nextWaveDelay > 0 ? nextWaveDelay : 1);
         }
+        else
+        {
+          this.deactivateWaveGroup({waveGroupName: this.props.waveGroupName});
+        }
+        return;
       }
     }
   }
@@ -148,6 +142,8 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
       return;
 
     console.log("Activating Wave Group: ", this.props.waveGroupName);
+
+    this.updateInterval = this.async.setInterval(this.updateState.bind(this), 1000);
 
     this.isActive = true;
 
@@ -162,6 +158,8 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
 
     console.log("Deactivating Wave Group: ", this.props.waveGroupName);
 
+    this.async.clearInterval(this.updateInterval);
+
     this.isActive = false;
 
     // Despawn everything
@@ -175,14 +173,8 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
   }
 
   private nextWave() {
-    if (!this.isActive)
+    if (!this.isActive || this.currentWave >= this.waveConfigs.length)
       return;
-
-    // Deactivate of this after the last wave
-    if (this.currentWave >= this.waveConfigs.length) {
-      this.deactivateWaveGroup({waveGroupName: this.props.waveGroupName});
-      return;
-    }
 
     // Get the wave config, and stop if it's invalid
     var waveConfig = BehaviourFinder.GetBehaviour<EnemyWaveConfig>(this.waveConfigs[this.currentWave].config);
@@ -193,21 +185,11 @@ export class EnemyWaveManager extends Behaviour<typeof EnemyWaveManager> {
     }
 
     // Housekeeping for the new wave
-    var playerCount = PlayerManager.instance.gamePlayers.playersInMatch.length;
-    var waveMultiplier = 1;
-    if (playerCount > 1)
-    {
-      waveMultiplier = (playerCount-1) * this.props.wavePlayerMultiplier;
-    }
-    var waveMultiplier = Math.pow(this.props.wavePlayerMultiplier, playerCount - 1);
+    var playerCount = PlayerManager.instance.gamePlayers.getPlayersInMatch().length;
+    var waveMultiplier = Math.pow(this.props.wavePlayerMultiplier, playerCount-1);
+
     this.waveSpawns.push(waveConfig.spawnEnemyWave(waveMultiplier));
     this.waveCompleteNotified.push(false);
-
-    // If we have a timed wave, set up the next wave after the delay
-    this.currentDelay = this.waveConfigs[this.currentWave].timeDelay;
-    if (this.currentDelay >=0) {
-      this.async.setTimeout(() => this.nextWave(), this.currentDelay * 1000);
-    }
 
     // Notify that we're starting the wave
     this.currentWave++;
