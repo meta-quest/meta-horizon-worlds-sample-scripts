@@ -3,11 +3,10 @@
 
 
 ## Requirements
-* Have access to the typescript interface to Horizon Worlds
-* ...
+* Have access to the Horizon Worlds advanced creation tools
 
 ## Full documentation
-https://metahorizoncreators.zendesk.com/hc/en-us
+https://developers.meta.com/horizon-worlds
 
 ## Join the Discord community
 * Discord: https://discord.com/invite/meta-horizon-worlds
