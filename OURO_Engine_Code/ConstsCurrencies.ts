@@ -1,5 +1,29 @@
-import {validId} from "./ConstsIds";
-import {TextureImageAssetEx} from "./AssetEx";
+// Copyright (c) Meta Platforms, Inc. and affiliates.
+
+// This source code is licensed under the MIT license found in the
+// LICENSE file in the root directory of this source tree.
+
+// Original code by OURO Interactive
+//------------------------------------
+//
+//                   @
+//                   @@@@
+//                    @@@@@
+//             @@@      @@@@@
+//           @@@@@@      @@@@@
+//          @@@@@         @@@@@@
+//        @@@@@              @@@@@
+//         @@@@@@           @@@@@
+//           @@@@@         @@@@@
+//             @@@@@@   @@@@@
+//               @@@@@ @@@@@
+//                 @@OURO@@
+//                   @@@
+//
+//------------------------------------
+
+import { validId } from "./ConstsIds";
+import { TextureImageAssetEx } from "./AssetEx";
 
 export const ALL_CURRENCY_IDS = [
     'GOLD',
