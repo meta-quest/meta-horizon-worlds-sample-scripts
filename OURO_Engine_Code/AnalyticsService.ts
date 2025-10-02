@@ -23,7 +23,7 @@
 //------------------------------------
 
 import { Component, Player, Vec3 } from 'horizon/core';
-import { InWorldAnalytics, MetricEvent, MetricTypes, SegmentEvent, SegmentEventType, SegmentType } from 'horizon/in_world_analytics';
+import { InWorldAnalytics, MetricEvent, MetricTypes, SegmentEvent, SegmentEventType, SegmentType } from 'AnalyticsTypes';
 import { GameModeId } from 'ConstsIdsGameMode';
 import { UNDEFINED } from 'EventData';
 import { onDeath } from 'Events';

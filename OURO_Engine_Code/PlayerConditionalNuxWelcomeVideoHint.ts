@@ -40,7 +40,6 @@ import {
 import { Game } from 'Game';
 import { CameraMode } from 'horizon/camera';
 import { CodeBlockEvents, Player, PropTypes } from 'horizon/core';
-import { MetricTypes } from 'horizon/in_world_analytics';
 import { ServerAnalyticsService, ServerVideoPlayerService } from 'PlatformServices';
 import { Hint } from 'PlayerConditionalNuxHints';
 

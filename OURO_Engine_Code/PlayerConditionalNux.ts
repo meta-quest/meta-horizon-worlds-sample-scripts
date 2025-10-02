@@ -33,7 +33,6 @@ import { nuxCompleted, nuxTrackLocalClient } from 'EventsNetworked';
 import { Game } from 'Game';
 import { GamePlayer } from 'GamePlayer';
 import { Component, EventSubscription, Player, World } from 'horizon/core';
-import { MetricTypes } from 'horizon/in_world_analytics';
 import { ServerAnalyticsService } from 'PlatformServices';
 import { ServerPlayerAsset } from 'PlayerAsset';
 import { AbilityHint } from 'PlayerConditionalNuxAbilityHint';
